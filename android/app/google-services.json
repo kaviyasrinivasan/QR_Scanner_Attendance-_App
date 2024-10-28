@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "64134178012",
+    "project_id": "ief-app-f2d4a",
+    "storage_bucket": "ief-app-f2d4a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64134178012:android:7da25cf9b516d2d5420019",
+        "android_client_info": {
+          "package_name": "com.example.qr_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXxbkiGzePbLg5EPaXTBOaKT9rqpjWwvU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
