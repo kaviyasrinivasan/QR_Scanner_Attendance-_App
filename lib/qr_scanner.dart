@@ -101,7 +101,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('QR Scanner')),
+      appBar: AppBar(title: Text('Scan QR Code for ${widget.eventName}')),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -114,9 +114,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
           Expanded(
             flex: 1,
             child: Center(
-              child: Text('Scan a QR code to save attendance.'),
+              child: Text('Scanning for event: ${widget.eventName} at ${widget.venue}'),
             ),
-          )
+          ),
         ],
       ),
     );

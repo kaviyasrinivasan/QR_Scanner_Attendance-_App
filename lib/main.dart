@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => HomePage(),
         '/eventDetail': (context) => EventDetailPage(eventName: '', venue: '', filePath: ''), // Placeholder
         '/scan': (context) => QRScannerPage(eventName: '', venue: ''), // Placeholder
-        '/showAttendance': (context) => ViewAttendanceScreen(filePath: '', eventName: ''), // Placeholder
+        '/showAttendance': (context) => ViewAttendanceScreen(eventName: '', filePath: ''), // Placeholder
       },
     );
   }

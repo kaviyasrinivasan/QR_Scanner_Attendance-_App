@@ -1,92 +1,6 @@
-// import 'package:flutter/material.dart';
-// import 'package:hive/hive.dart';
-// import 'package:path_provider/path_provider.dart';
-//
-// class Dashboard extends StatefulWidget {
-//   @override
-//   _DashboardState createState() => _DashboardState();
-// }
-//
-// class _DashboardState extends State<Dashboard> {
-//   final TextEditingController eventNameController = TextEditingController();
-//   final TextEditingController venueController = TextEditingController();
-//   late Box attendanceBox;
-//   bool _eventSaved = false;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initHive();
-//   }
-//
-//   Future<void> _initHive() async {
-//     final directory = await getApplicationDocumentsDirectory();
-//     Hive.init(directory.path);
-//     attendanceBox = await Hive.openBox('attendance');
-//   }
-//
-//   void saveEventDetails() {
-//     if (eventNameController.text.isNotEmpty && venueController.text.isNotEmpty) {
-//       attendanceBox.put('eventName', eventNameController.text);
-//       attendanceBox.put('venue', venueController.text);
-//       setState(() {
-//         _eventSaved = true; // Flag to indicate event saved
-//       });
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Event details saved!')),
-//       );
-//     } else {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Please fill in both Event Name and Venue')),
-//       );
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("Event Dashboard")),
-//       body: Padding(
-//         padding: const EdgeInsets.all(8.0),
-//         child: Column(
-//           children: [
-//             TextField(
-//               controller: eventNameController,
-//               decoration: InputDecoration(labelText: 'Event Name'),
-//             ),
-//             TextField(
-//               controller: venueController,
-//               decoration: InputDecoration(labelText: 'Venue'),
-//             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: saveEventDetails,
-//               child: Text("Save Event Details"),
-//             ),
-//             SizedBox(height: 10),
-//             ElevatedButton(
-//               onPressed: _eventSaved
-//                   ? () {
-//                 Navigator.pushNamed(context, '/scan');
-//               }
-//                   : null, // Only enabled after event is saved
-//               child: Text("Scan for Attendance"),
-//             ),
-//             SizedBox(height: 10),
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.pushNamed(context, '/showAttendance');
-//               },
-//               child: Text("Show Attendance"),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
-import 'event_detail.dart'; // Import EventDetailPage
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'event_detail.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -94,54 +8,85 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController eventNameController = TextEditingController();
-  TextEditingController venueController = TextEditingController();
+  final TextEditingController _eventNameController = TextEditingController();
+  final TextEditingController _venueController = TextEditingController();
+
+  // Collection reference for events in Firestore
+  final CollectionReference _eventsCollection =
+  FirebaseFirestore.instance.collection('events');
+
+  void _addEvent() async {
+    if (_eventNameController.text.isNotEmpty &&
+        _venueController.text.isNotEmpty) {
+      await _eventsCollection.add({
+        'eventName': _eventNameController.text,
+        'venue': _venueController.text,
+      });
+      _eventNameController.clear();
+      _venueController.clear();
+      setState(() {}); // Refresh the state to show new events
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Enter Event Details'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: eventNameController,
+      appBar: AppBar(title: Text('QR Attendance App')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _eventNameController,
               decoration: InputDecoration(labelText: 'Event Name'),
             ),
-            SizedBox(height: 20),
-            TextField(
-              controller: venueController,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _venueController,
               decoration: InputDecoration(labelText: 'Venue'),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                String eventName = eventNameController.text;
-                String venue = venueController.text;
-
-                if (eventName.isNotEmpty && venue.isNotEmpty) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EventDetailPage(
-                        eventName: eventName,
-                        venue: venue, filePath: '',
-                      ),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please enter both event name and venue')),
-                  );
+          ),
+          ElevatedButton(
+            onPressed: _addEvent,
+            child: Text('Add Event'),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _eventsCollection.snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
                 }
+                final events = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+                    return ListTile(
+                      title: Text(event['eventName']),
+                      subtitle: Text(event['venue']),
+                      onTap: () {
+                        String filePath = '${event['eventName']}_attendance.xlsx'; // Adjust the path generation as needed
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventDetailPage(
+                              eventName: event['eventName'],
+                              venue: event['venue'],
+                              filePath: filePath, // Pass the generated filePath here
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
               },
-              child: Text('Go to Event Details'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
