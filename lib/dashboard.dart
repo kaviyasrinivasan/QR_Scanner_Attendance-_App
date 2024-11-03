@@ -28,6 +28,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _deleteEvent(String eventId) async {
+    await _eventsCollection.doc(eventId).delete(); // Delete the event by ID
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,18 +72,46 @@ class _HomePageState extends State<HomePage> {
                       title: Text(event['eventName']),
                       subtitle: Text(event['venue']),
                       onTap: () {
-                        String filePath = '${event['eventName']}_attendance.xlsx'; // Adjust the path generation as needed
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => EventDetailPage(
                               eventName: event['eventName'],
                               venue: event['venue'],
-                              filePath: filePath, // Pass the generated filePath here
+                              eventId: event.id, // Pass eventId
+                              filePath: '', // Pass filePath as a placeholder
                             ),
                           ),
                         );
                       },
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          // Show a confirmation dialog before deleting
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Delete Event'),
+                              content: Text('Are you sure you want to delete this event?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    _deleteEvent(event.id); // Delete the event
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     );
                   },
                 );

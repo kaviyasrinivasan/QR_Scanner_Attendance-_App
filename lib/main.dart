@@ -3,8 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dashboard.dart';
 import 'event_detail.dart';
-import 'qr_scanner.dart'; // Import QRScannerPage
-import 'show_attendance.dart'; // Import ViewAttendanceScreen
+import 'qr_scanner.dart';
+import 'show_attendance.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -34,9 +34,20 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => HomePage(),
-        '/eventDetail': (context) => EventDetailPage(eventName: '', venue: '', filePath: ''), // Placeholder
-        '/scan': (context) => QRScannerPage(eventName: '', venue: ''), // Placeholder
-        '/showAttendance': (context) => ViewAttendanceScreen(eventName: '', filePath: ''), // Placeholder
+        '/eventDetail': (context) => EventDetailPage(
+          eventName: '',
+          venue: '',
+          eventId: '',
+          filePath: '', // Provide a placeholder for filePath
+        ),
+        '/scan': (context) => QRScannerPage(
+            eventName: '',
+            venue: ''
+        ),
+        '/showAttendance': (context) => ViewAttendanceScreen(
+            eventName: '',
+            filePath: '' // Provide a placeholder for filePath
+        ),
       },
     );
   }
